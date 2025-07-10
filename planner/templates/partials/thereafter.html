@@ -1,0 +1,12 @@
+ <tr >
+    <td>{{plan.plan_date|date:"d/m/Y"}}</td>
+    <td>{{plan.plan_time|time:"h:i A"}}</td>
+    <td>{{plan.plan_text}}</td>
+    <td>{{plan.plan_venue | linebreaks}}</td>
+    <td>{{plan.plan_how}}</td>             
+    <td>{{plan.plan_remarks | linebreaks}}</td>
+    <td>
+    {% comment %} <a class="btn btn-info ms-2 mx-2" href="{% url 'vig:vig_view' d.id %}">View</a> {% endcomment %}
+    <a class="btn btn-primary ms-2" href="{% url 'planner:planner_update' plan.id %}">Update</a>
+    </td>
+</tr>

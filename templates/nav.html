@@ -1,0 +1,52 @@
+{% load static %}
+   <nav class="navbar navbar-expand-md .bg-light shadow p-3 mb-5 bg-body rounded">
+                    <div class="container-fluid ms-0 pe-2 ">
+                      <a class="navbar-brand img-fluid" href="{% url 'planner:home' %}" >
+                         <img src="{% static '/images/logo_secl.png' %}" px-5 width="180px" height="80px" > 
+                      </a>
+                      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                      </button>
+                      <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav align-items-baseline justify-content-evenly px-5 ">
+                          <li class="nav-item ">
+                            <a class="nav-link hovercolor fs-4 text-secondary" aria-current="page" href="{% url 'visitor:visitor_table' %}">Visitors</a>
+                          </li>
+                          <li class="nav-item ">
+                            <a class="nav-link hovercolor fs-4 text-secondary" href="{% url 'planner:planner_table' %}">&nbsp;&nbsp;Engagement</a>
+                          </li>
+                                                 
+                          
+                        </ul>
+                      </div>
+
+                      
+                    {% if user.is_authenticated %}
+                      
+                      <div>
+                        
+                        <ul class="navbar-nav align-items-baseline justify-content-evenly px-5 ">
+                          <li class="nav-item ">
+                            <p class="nav-link fs-4 text-success me-5" aria-current="page">[ Welcome- <strong> {{ request.user.get_full_name  | title }} </strong>]</p>
+                          </li> 
+                          <li>
+                              <form action="{% url 'users:logout' %}" method="post">
+                                  {% csrf_token %} 
+                                  <button type="submit" class="nav-link hovercolor fs-4 text-warning" aria-current="page">Logout</button>
+                              </form>
+                          </li>
+                        </ul>
+                      </div>
+                    {% else %}
+                      <div>
+                        <ul class="navbar-nav align-items-baseline justify-content-evenly px-5 ">
+                          <li class="nav-item ">
+                            <a class="nav-link hovercolor fs-4 text-info" aria-current="page" href="{% url 'users:login' %}">Login</a>
+                          </li>
+                        </ul>
+                      </div>
+                    {% endif %}
+
+                    </div>
+  </nav> 
+  {% comment %} <hr style="width:100%; border-bottom: 2px solid #00FFFF shadow;"> {% endcomment %}

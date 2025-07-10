@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<form id="visitorForm" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    
+    {% if form.errors %}
+        <ul style="color:red">
+            {% for field, error in form.errors.items %}
+                <li><strong>{{ field }}:</strong> {{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    
+    <div class="container mt-1" style="width:800px;">
+        <div class="card bg-secondary fw-800">
+            <h4 class="card-header">Update Visitor</h4>
+            <div class="card-body">
+                {{ form|crispy }}
+
+                <div class="text-center mb-3">
+                    <video id="video" width="320" height="240" autoplay class="border"></video><br>
+                    <button type="button" class="btn btn-warning mt-2" onclick="capturePhoto()">Capture Photo</button>
+                </div>
+
+                <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+
+                <!-- Hidden input to receive image blob -->
+                <input type="file" id="vis_photo" name="vis_photo" accept="image/jpeg" hidden >
+                {% comment %} {% if visitor.vis_photo %}
+                <img src="{{ visitor.vis_photo.url }}" width="200">
+                {% endif %} {% endcomment %}
+
+                <div class="text-center">
+                    <a href="{% url 'visitor:visitor_table' %}">
+                    <button type="submit" class="btn btn-primary mt-4 w-25">Update</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock content %}
+
+{% block script %}
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const visPhotoInput = document.getElementById('vis_photo');
+   
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            video.srcObject = stream;
+        }).catch(err => {
+            alert("Camera access denied or not available.");
+        });
+
+    function capturePhoto() {
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const visNameInput = document.getElementById('id_vis_name').value;
+
+        const now = new Date();
+        const timestamp = now.toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
+        const filename = `${visNameInput}_${timestamp}.jpg`;
+        
+        canvas.toBlob(blob => {
+            const file = new File([blob], filename, { type: 'image/jpeg' });
+
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            visPhotoInput.files = dataTransfer.files;
+
+            alert("Photo captured!");
+        }, 'image/jpeg');
+    }
+</script>
+{% endblock script %}
+
+{% comment %} <script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+    // Add this before submitting form (optional: debug only if needed)
+    document.getElementById('visitorForm').addEventListener('submit', function (e) {
+        console.log('CSRF Token:', csrftoken);  // optional: remove later
+    });
+</script> {% endcomment %}

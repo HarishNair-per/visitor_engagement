@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<form id="PlannerUpdateForm" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    
+    {% if form.errors %}
+        <ul style="color:red">
+            {% for field, error in form.errors.items %}
+                <li><strong>{{ field }}:</strong> {{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    
+    <div class="container mt-1" style="width:800px;">
+        <div class="card bg-secondary fw-800">
+            <h4 class="card-header">Update Enagement</h4>
+            <div class="card-body">
+                {{ form|crispy }}
+
+                
+                <div class="text-center">
+                    <a href="{% url 'planner:planner_table' %}">
+                    <button type="submit" class="btn btn-primary mt-4 w-25">Update</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock content %}

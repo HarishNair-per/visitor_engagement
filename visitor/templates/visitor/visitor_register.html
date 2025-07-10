@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-1" style="width:800px;">
+<div class="card bg-secondary fw-800">
+    <h4 class="card-header">Visitor Registration</h4>
+    <div class="card-body">
+        
+
+        <div class="d-flex justify-content-center mb-1">
+         <video id="video" width="300" height="300" autoplay class="center mb-1"></video>
+        </div>
+        <canvas  id="canvas" style="display:none;"></canvas>
+        
+        <div class="text-center">
+            <button class="btn btn-primary mb-3" id="snap">Capture Photo</button>
+        </div>
+        <div class="d-flex justify-content-center">
+             <img id="photo-preview" src="" alt="Captured Photo" class="img-thumbnail mt-2" style="display:none; max-width: 320px;">
+        </div>
+        <div id="response-message" class="text-center mt-3"></div>
+        <form method="post" enctype="multipart/form-data" id="visitor-form">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <input type="hidden" name="captured_image" id="captured_image">
+            <div class='text-center'>
+                 <button type="submit" class="btn btn-success">Save</button>
+            </div>
+        </form>
+        
+    </div>
+</div>
+</div>
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const snap = document.getElementById("snap");
+    const capturedImageInput = document.getElementById('captured_image');
+    const preview = document.getElementById('photo-preview');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => video.srcObject = stream);
+
+    snap.addEventListener("click", async function (e) {
+    e.preventDefault();
+    const context = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0);
+    const dataURL = canvas.toDataURL('image/jpeg');
+    capturedImageInput.value = dataURL;
+
+    const formData = new FormData();
+    formData.append('captured_image', dataURL);
+
+    document.getElementById('response-message').innerHTML = '<div class="text-info">Matching face, please wait...</div>';
+
+    try {
+        const response = await fetch("{% url 'visitor:visitor_api' %}", {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        });
+        const data = await response.json();
+        const msgDiv = document.getElementById('response-message');
+        msgDiv.innerHTML = `<div class="alert alert-${data.status === 'success' || data.status === 'matched' ? 'success' : 'danger'}">${data.message}</div>`;
+
+        if (data.status === 'matched') {
+            document.getElementById('id_vis_name').value = data.visitor.vis_name;
+            document.getElementById('id_vis_address').value = data.visitor.vis_address;
+            document.getElementById('id_vis_mobile').value = data.visitor.vis_mobile;
+            document.getElementById('id_vis_email').value = data.visitor.vis_email;
+        } else if (data.status === 'new') {
+            alert("New visitor detected. Please complete the form.");
+        }
+    } catch (err) {
+        document.getElementById('response-message').innerHTML = '<div class="alert alert-danger">Error contacting server.</div>';
+    }
+});
+
+</script>
+{% endblock %}
